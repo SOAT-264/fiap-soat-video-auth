@@ -8,12 +8,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy shared package first
+COPY fiap-soat-video-shared/ /tmp/video-processor-shared/
+RUN pip install --no-cache-dir /tmp/video-processor-shared/
+
 # Copy requirements and install dependencies
-COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .
+COPY fiap-soat-video-auth/pyproject.toml .
+RUN pip install --no-cache-dir \
+    "fastapi>=0.109.0" \
+    "uvicorn[standard]>=0.27.0" \
+    "pydantic>=2.0.0" \
+    "pydantic-settings>=2.0.0" \
+    "pydantic[email]>=2.0.0" \
+    "sqlalchemy>=2.0.0" \
+    "asyncpg>=0.29.0" \
+    "psycopg2-binary>=2.9.0" \
+    "redis>=5.0.0" \
+    "python-multipart>=0.0.6"
 
 # Copy application code
-COPY src/ src/
+COPY fiap-soat-video-auth/src/ src/
+
+# Set Python path
+ENV PYTHONPATH=/app/src
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
