@@ -1,5 +1,7 @@
 """Auth API Routes."""
 from typing import Annotated
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from auth_service.application.use_cases import RegisterUserUseCase, LoginUserUseCase
@@ -103,6 +105,24 @@ async def get_me(
 ):
     """Get current authenticated user information."""
     return current_user
+
+
+@router.get("/users/{user_id}", response_model=UserResponse)
+async def get_user_by_id(
+    user_id: UUID,
+    user_repository: Annotated[IUserRepository, Depends(get_user_repository)],
+):
+    """Get user by ID (internal use)."""
+    user = await user_repository.find_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return UserResponse(
+        id=user.id,
+        email=user.email.value,
+        full_name=user.full_name,
+        is_active=user.is_active,
+        created_at=user.created_at,
+    )
 
 
 @router.post("/validate")
