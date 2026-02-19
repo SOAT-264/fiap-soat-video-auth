@@ -75,6 +75,8 @@ async def test_save_returns_same_user_and_flushes():
     assert saved is user
     assert len(session.added) == 1
     assert session.flushed == 1
+    assert session.added[0].created_at.tzinfo is None
+    assert session.added[0].updated_at.tzinfo is None
 
 
 @pytest.mark.asyncio
@@ -145,3 +147,5 @@ def test_to_entity_maps_fields_correctly():
     assert entity.id == user.id
     assert entity.email.value == user.email.value
     assert entity.full_name == user.full_name
+    assert entity.created_at.tzinfo == UTC
+    assert entity.updated_at.tzinfo == UTC

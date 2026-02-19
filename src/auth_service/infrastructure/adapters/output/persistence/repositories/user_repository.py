@@ -1,4 +1,5 @@
 """SQLAlchemy User Repository."""
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import UUID
 
@@ -27,8 +28,8 @@ class SQLAlchemyUserRepository(IUserRepository):
             password_salt=user.password.salt,
             full_name=user.full_name,
             is_active=user.is_active,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
+            created_at=self._to_db_datetime(user.created_at),
+            updated_at=self._to_db_datetime(user.updated_at),
         )
         self._session.add(model)
         await self._session.flush()
@@ -59,7 +60,7 @@ class SQLAlchemyUserRepository(IUserRepository):
             model.password_salt = user.password.salt
             model.full_name = user.full_name
             model.is_active = user.is_active
-            model.updated_at = user.updated_at
+            model.updated_at = self._to_db_datetime(user.updated_at)
             await self._session.flush()
         return user
 
@@ -82,6 +83,20 @@ class SQLAlchemyUserRepository(IUserRepository):
             password=Password.from_hash(model.password_hash, model.password_salt),
             full_name=model.full_name,
             is_active=model.is_active,
-            created_at=model.created_at,
-            updated_at=model.updated_at,
+            created_at=self._to_domain_datetime(model.created_at),
+            updated_at=self._to_domain_datetime(model.updated_at),
         )
+
+    @staticmethod
+    def _to_db_datetime(value: datetime) -> datetime:
+        """Convert datetime to UTC naive for TIMESTAMP WITHOUT TIME ZONE columns."""
+        if value.tzinfo is None:
+            return value
+        return value.astimezone(UTC).replace(tzinfo=None)
+
+    @staticmethod
+    def _to_domain_datetime(value: datetime) -> datetime:
+        """Convert datetime from DB to UTC aware in domain."""
+        if value.tzinfo is not None:
+            return value.astimezone(UTC)
+        return value.replace(tzinfo=UTC)
