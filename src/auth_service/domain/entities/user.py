@@ -1,5 +1,5 @@
 """User Entity."""
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 from uuid import UUID
 
@@ -29,8 +29,8 @@ class User:
         self.password = password
         self.full_name = full_name
         self.is_active = is_active
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
+        self.updated_at = updated_at or datetime.now(UTC)
 
     def validate_password(self, plain_password: str) -> bool:
         """Validate if the given password matches."""
@@ -39,22 +39,22 @@ class User:
     def activate(self) -> None:
         """Activate the user account."""
         self.is_active = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def deactivate(self) -> None:
         """Deactivate the user account."""
         self.is_active = False
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def update_name(self, full_name: str) -> None:
         """Update user's full name."""
         self.full_name = full_name
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def change_password(self, new_password: Password) -> None:
         """Change user's password."""
         self.password = new_password
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, User):

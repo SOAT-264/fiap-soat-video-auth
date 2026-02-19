@@ -5,6 +5,11 @@ __pycache__/
 dist/
 build/
 .eggs/
+.python-version
+
+# Packaging
+*.egg
+pip-wheel-metadata/
 
 # Virtual environments
 .venv/
@@ -19,8 +24,16 @@ env/
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 coverage.xml
+
+# Type checking / lint
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
 
 # Environment
 .env

@@ -1,5 +1,5 @@
 """Login User Use Case."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 from uuid import UUID
 import hashlib
@@ -71,7 +71,7 @@ class LoginUserUseCase:
             raise InvalidCredentialsError("Invalid token")
 
         exp = payload.get("exp", 0)
-        if datetime.utcnow().timestamp() > exp:
+        if datetime.now(UTC).timestamp() > exp:
             raise InvalidCredentialsError("Token expired")
 
         user_id = payload.get("sub")
@@ -100,7 +100,7 @@ class LoginUserUseCase:
             if not payload:
                 return False
             exp = payload.get("exp", 0)
-            return datetime.utcnow().timestamp() <= exp
+            return datetime.now(UTC).timestamp() <= exp
         except Exception:
             return False
 
@@ -111,7 +111,7 @@ class LoginUserUseCase:
             json.dumps(header).encode()
         ).rstrip(b"=").decode()
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         payload = {
             "sub": user_id,
             "email": email,
