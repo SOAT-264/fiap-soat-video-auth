@@ -16,7 +16,7 @@ dependencies = [
     "asyncpg>=0.29.0",
     "redis>=5.0.0",
     "python-multipart>=0.0.6",
-    "video-processor-shared>=0.1.0",
+    "video-processor-shared @ git+https://github.com/SOAT-264/fiap-soat-video-shared.git",
 ]
 
 [project.optional-dependencies]
