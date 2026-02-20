@@ -17,6 +17,7 @@ dependencies = [
     "redis>=5.0.0",
     "python-multipart>=0.0.6",
     "video-processor-shared @ git+https://github.com/SOAT-264/fiap-soat-video-shared.git",
+    "email-validator>=2.0.0",
 ]
 
 [project.optional-dependencies]
