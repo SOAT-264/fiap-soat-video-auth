@@ -17,6 +17,7 @@ COPY fiap-soat-video-auth/pyproject.toml .
 RUN pip install --no-cache-dir \
     "fastapi>=0.109.0" \
     "uvicorn[standard]>=0.27.0" \
+    "prometheus-client>=0.20.0" \
     "pydantic>=2.0.0" \
     "pydantic-settings>=2.0.0" \
     "pydantic[email]>=2.0.0" \
