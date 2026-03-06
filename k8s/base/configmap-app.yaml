@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-app-config
+  namespace: video-processor
+data:
+  LOG_LEVEL: "INFO"
+  PYTHONUNBUFFERED: "1"
+  DATABASE_URL: "postgresql+asyncpg://postgres:postgres123@postgres-auth:5432/auth_db"
+  REDIS_URL: "redis://redis:6379/0"
+  JWT_ALGORITHM: "HS256"
+  JWT_EXPIRATION_HOURS: "24"
