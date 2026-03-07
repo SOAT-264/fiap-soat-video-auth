@@ -7,9 +7,17 @@ Microserviço de autenticação e identidade do ecossistema FIAP SOAT Video Proc
 - Explicação do projeto
 - Objetivo
 - Como funciona
+- Repositórios relacionados
 - Integrações com outros repositórios
 - Como executar
 - Como testar
+
+## Repositórios relacionados
+- [fiap-soat-video-local-dev](https://github.com/SOAT-264/fiap-soat-video-local-dev)
+- [fiap-soat-video-service](https://github.com/SOAT-264/fiap-soat-video-service)
+- [fiap-soat-video-notifications](https://github.com/SOAT-264/fiap-soat-video-notifications)
+- [fiap-soat-video-shared](https://github.com/SOAT-264/fiap-soat-video-shared)
+- [fiap-soat-video-obs](https://github.com/SOAT-264/fiap-soat-video-obs)
 
 ## Explicação do projeto
 O projeto segue uma organização em camadas (`application`, `domain`, `infrastructure`) e expõe uma API FastAPI para autenticação. O serviço utiliza PostgreSQL para persistência de usuários e disponibiliza endpoint de métricas Prometheus em `/metrics`.
