@@ -1,180 +1,74 @@
-# 🔐 Video Processor - Auth Service
+# fiap-soat-video-auth
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Introdução
+Microserviço de autenticação e identidade do ecossistema FIAP SOAT Video Processor. Ele gerencia cadastro, login, validação de token JWT e consulta de usuário para consumo interno pelos outros serviços.
 
-> Microserviço de autenticação responsável pelo registro, login e validação de tokens JWT.
+## Sumário
+- Explicação do projeto
+- Objetivo
+- Como funciona
+- Integrações com outros repositórios
+- Como executar
+- Como testar
 
-## 📋 Índice
+## Explicação do projeto
+O projeto segue uma organização em camadas (`application`, `domain`, `infrastructure`) e expõe uma API FastAPI para autenticação. O serviço utiliza PostgreSQL para persistência de usuários e disponibiliza endpoint de métricas Prometheus em `/metrics`.
 
-- [Arquitetura](#-arquitetura)
-- [API Endpoints](#-api-endpoints)
-- [Como Executar](#-como-executar)
-- [Variáveis de Ambiente](#-variáveis-de-ambiente)
-- [Testes](#-testes)
+## Objetivo
+Ser a fonte central de identidade da plataforma, garantindo autenticação consistente e suporte à autorização entre os microserviços.
 
----
+## Como funciona
+1. `POST /auth/register` cadastra novos usuários com validações de e-mail e senha.
+2. `POST /auth/login` autentica o usuário e retorna JWT.
+3. `GET /auth/me` valida o token bearer e retorna dados do usuário autenticado.
+4. `GET /auth/users/{user_id}` expõe consulta interna de usuário (usado por outros serviços).
+5. Endpoints de suporte:
+`POST /auth/validate`, `GET /health`, `GET /ready`, `GET /metrics`.
 
-## 🏗️ Arquitetura
+## Integrações com outros repositórios
+| Repositório integrado | Como integra | Para que serve |
+| --- | --- | --- |
+| `fiap-soat-video-local-dev` | Build/deploy local via `start.ps1`, infraestrutura (PostgreSQL/Redis) e roteamento `auth.localhost` | Executar e validar o serviço no ambiente integrado principal |
+| `fiap-soat-video-service` | Chamada HTTP em `GET /auth/me` para validar token em operações de vídeo | Garantir que upload/listagem de vídeos seja autenticada |
+| `fiap-soat-video-notifications` | Chamada HTTP em `GET /auth/users/{id}` para obter e-mail do destinatário | Resolver e-mail do usuário para envio de notificações |
+| `fiap-soat-video-jobs` | Configuração de `AUTH_SERVICE_URL` no ambiente integrado | Manter contrato de identidade entre serviços no ambiente distribuído |
+| `fiap-soat-video-shared` | Uso de value objects e exceções compartilhadas (`Email`, `Password`, erros de domínio) | Padronizar regras de domínio e contratos entre serviços |
+| `fiap-soat-video-obs` | Exposição de `/health` e `/metrics` consumidos por Prometheus/Blackbox | Observabilidade de saúde e métricas do serviço |
 
-Este serviço segue a **Arquitetura Hexagonal (Ports & Adapters)**:
-
-```
-src/auth_service/
-├── domain/
-│   └── entities/user.py         # Entidade User
-├── application/
-│   ├── ports/                   # Interfaces
-│   │   ├── input/               # IAuthService
-│   │   └── output/              # IUserRepository
-│   └── use_cases/               # RegisterUser, LoginUser
-└── infrastructure/
-    ├── adapters/
-    │   ├── input/api/           # FastAPI routes
-    │   └── output/persistence/  # SQLAlchemy repository
-    └── config/                  # Settings
-```
-
----
-
-## 📡 API Endpoints
-
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|--------------|
-| POST | `/auth/register` | Registrar novo usuário | ❌ |
-| POST | `/auth/login` | Fazer login | ❌ |
-| GET | `/auth/me` | Obter dados do usuário | ✅ JWT |
-| GET | `/health` | Health check | ❌ |
-
-### Exemplos
-
-#### Registrar
-
-```bash
-curl -X POST http://localhost:8001/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePass123!",
-    "full_name": "João Silva"
-  }'
-```
-
-**Resposta:**
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "full_name": "João Silva",
-  "created_at": "2024-01-01T00:00:00Z"
-}
-```
-
-#### Login
-
-```bash
-curl -X POST http://localhost:8001/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePass123!"
-  }'
-```
-
-**Resposta:**
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "token_type": "bearer",
-  "expires_in": 3600
-}
-```
-
-#### Me (Profile)
-
-```bash
-curl http://localhost:8001/auth/me \
-  -H "Authorization: Bearer $TOKEN"
-```
-
----
-
-## 🚀 Como Executar
-
+## Como executar
 ### Pré-requisitos
-
 - Python 3.11+
-- PostgreSQL
+- Dependências de infraestrutura (recomendado subir via `fiap-soat-video-local-dev`)
 
-### 1. Clone e instale
-
-```bash
-git clone https://github.com/morgadope/fiap-soat-video-auth.git
-cd fiap-soat-video-auth
+### Execução local da API
+```powershell
+cd /fiap-soat-video-auth
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
+
+$env:DATABASE_URL="postgresql+asyncpg://postgres:postgres123@localhost:5432/auth_db"
+$env:REDIS_URL="redis://localhost:6379/0"
+$env:JWT_SECRET="dev-jwt-secret-key-change-in-production"
+$env:JWT_ALGORITHM="HS256"
+$env:JWT_EXPIRY_HOURS="24"
+
+uvicorn auth_service.infrastructure.adapters.input.api.main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-### 2. Configure as variáveis
-
-```bash
-export DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/auth_db"
-export JWT_SECRET="your-super-secret-key"
-export JWT_ALGORITHM="HS256"
-export JWT_EXPIRATION_HOURS=1
+### Execução integrada (recomendada)
+Suba pelo repositório principal:
+```powershell
+cd /fiap-soat-video-local-dev
+.\start.ps1
 ```
 
-### 3. Execute
-
-```bash
-uvicorn auth_service.infrastructure.adapters.input.api.main:app --reload --port 8001
+## Como testar
+```powershell
+cd /fiap-soat-video-auth
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+pytest
 ```
 
-### 4. Acesse
-
-- **Swagger**: http://localhost:8001/docs
-- **Health**: http://localhost:8001/health
-
----
-
-## 🐳 Docker
-
-```bash
-# Build
-docker build -t auth-service .
-
-# Run
-docker run -p 8001:8001 \
-  -e DATABASE_URL="postgresql+asyncpg://..." \
-  -e JWT_SECRET="your-secret" \
-  auth-service
-```
-
----
-
-## ⚙️ Variáveis de Ambiente
-
-| Variável | Descrição | Padrão |
-|----------|-----------|--------|
-| `DATABASE_URL` | URL de conexão PostgreSQL | - |
-| `JWT_SECRET` | Chave secreta para JWT | - |
-| `JWT_ALGORITHM` | Algoritmo JWT | HS256 |
-| `JWT_EXPIRATION_HOURS` | Tempo de expiração do token | 1 |
-
----
-
-## 🧪 Testes
-
-```bash
-# Rodar testes
-pytest tests/ -v
-
-# Com cobertura
-pytest tests/ -v --cov=auth_service --cov-report=html
-```
-
----
-
-## 📄 Licença
-
-MIT License
