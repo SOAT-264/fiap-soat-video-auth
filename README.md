@@ -1,6 +1,8 @@
 # fiap-soat-video-auth
 
 ## Introdução
+> Este repositório faz parte do projeto [FIAP SOAT Video Processor](https://github.com/SOAT-264/fiap-soat-video-local-dev).
+
 Microserviço de autenticação e identidade do ecossistema FIAP SOAT Video Processor. Ele gerencia cadastro, login, validação de token JWT e consulta de usuário para consumo interno pelos outros serviços.
 
 ## Sumário
